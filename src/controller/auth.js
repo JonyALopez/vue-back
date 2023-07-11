@@ -20,17 +20,11 @@ const singUp= async (req, res)=>{
         
         await validation.save();
 
-        const token = await generateJWT(
-            validation.id,
-            validation.name,
-            validation.lastName,
-            validation.email,
-        )
 
         return res.status(200).json({
             succes: true,
             validation,
-            token
+            message:'Usuario creado'
         })
 
     }catch(error){

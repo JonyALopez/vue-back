@@ -41,6 +41,52 @@ const singUp= async (req, res)=>{
     }
 }
 
+const signIn = async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const validation = await User.findOne({ email });//,{password: 0, oldPassword: 0}
+        
+        if (!validation) {
+            return res.status(400).json({
+                succes: false,
+                error: 'el correo electrónico ingresado no está registrado por favor verifíquelo',
+                namError: 'email no encontrado'
+            });
+        }
+        
+
+        const compareValidation = bcrypt.compareSync(password, validation.password);
+
+        if (!compareValidation) {
+            return res.status(400).json({
+                succes: false,
+                error: 'la contraseña ingresada es incorrecta',
+                error: 'contrasena incorrecta'
+            });
+        }
+
+        await validation.save();
+        const token = await generateJWT(
+            validation.id,
+            validation.name,
+            validation.lastName,
+            validation.email,
+        );
+        return res.status(200).json({
+            succes: true,
+            validation,
+            token
+        });
+    } catch (error) {
+        return res.status(500).json({
+            succes: false,
+            error: error.message
+        });
+    }
+
+
+}
+
 const validationToken = async (req, res)=>{
     try{
         res.status(200).json({
@@ -48,7 +94,7 @@ const validationToken = async (req, res)=>{
             message: 'El token es valido'
         })
     }catch(error){
-        res.status(200).json({
+        res.status(400).json({
             succes:false,
             error: message.error
         })
@@ -58,5 +104,6 @@ const validationToken = async (req, res)=>{
 
 module.exports={
     singUp,
-    validationToken
+    validationToken,
+    signIn
 }
